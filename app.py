@@ -5,7 +5,7 @@ import joblib
 # -----------------------------
 # Load trained model (TOP level)
 # -----------------------------
-model = joblib.load("diabetes.pkl")
+model = joblib.load("diabetess.pkl")
 
 st.title("🩺 Diabetes Prediction App")
 

@@ -11,19 +11,20 @@ st.set_page_config(
 )
 
 # --- Load Trained Model ---
-# Ensure karein ki aapne model ko 'diabetes.pkl' naam se save kiya hai
+# @st.cache_resource use karne se model baar-baar load nahi hoga
 @st.cache_resource
-def load_model():
+def load_diabetes_model():
+    # Ensure karein ki diabetes.pkl file aapke GitHub repo ke main folder mein hai
     return joblib.load("diabetes.pkl")
 
-model = load_model()
+# Yahan hum model ko load kar rahe hain
+model = load_diabetes_model()
 
 # --- UI Header ---
 st.title("🏥 Diabetes Prediction App")
 st.write("Enter the patient details below to predict the outcome.")
 
-# --- User Inputs (Based on your CSV columns) ---
-# image_0e2d05.png ke columns ke mutabik inputs
+# --- User Inputs (Matching your CSV columns) ---
 col1, col2 = st.columns(2)
 
 with col1:
@@ -40,8 +41,8 @@ with col2:
 
 # --- Prediction Logic ---
 if st.button("Predict Result 🩺"):
-    # Create input DataFrame
-    input_df = pd.DataFrame({
+    # 1. DataFrame banana jo training data (X_train) jaisa dikhe [cite: 10, 11]
+    input_data = pd.DataFrame({
         "Pregnancies": [pregnancies],
         "Glucose": [glucose],
         "BloodPressure": [blood_pressure],
@@ -52,17 +53,19 @@ if st.button("Predict Result 🩺"):
         "Age": [age]
     })
 
-    # Prediction
-    prediction = model.predict(input_df)
-    probability = model.predict_proba(input_df)
+    # 2. Model Prediction [cite: 12, 13]
+    try:
+        prediction = model.predict(input_data)
+        probability = model.predict_proba(input_data)
 
-    st.markdown("---")
-    if prediction[0] == 1:
-        st.error(f"### Result: Positive for Diabetes (Probability: {probability[0][1]:.2%})")
-        st.write("The patient is likely to have diabetes. Please consult a doctor.")
-    else:
-        st.success(f"### Result: Negative for Diabetes (Probability: {probability[0][0]:.2%})")
-        st.write("The patient is unlikely to have diabetes.")
+        st.markdown("---")
+        if prediction[0] == 1:
+            st.error(f"### Result: Positive for Diabetes (Probability: {probability[0][1]:.2%})")
+        else:
+            st.success(f"### Result: Negative for Diabetes (Probability: {probability[0][0]:.2%})")
+            
+    except Exception as e:
+        st.error(f"Error during prediction: {e}")
 
 # --- Footer ---
 st.markdown("---")
